@@ -7,6 +7,7 @@ import           Text.Printf
 import           System.Environment
 import           Control.Exception (assert)
 import           Debug.Trace
+import           Data.Typeable
 
 
 -- Data definitions
@@ -74,6 +75,33 @@ formatOutput res =
     "s SATISFIABLE\n" ++ "v" ++ (show res) ++ " 0"
 
 
+-- | Checks if a given Literal is contained as a unit clause in a SATInstance
+checkUnitElim :: Literal -> SATInstance -> Bool
+checkUnitElim lit satinstance = 
+    any (\clause -> elem lit clause && 1 == Set.size clause) $ Set.toList satinstance
+
+
+-- | Does a unit clause elimination with a given Literal and SATInstance
+doUnitElim :: Literal -> SATInstance -> SATInstance
+--doUnitElim _ empty = empty      -- shouldn't be necessary
+doUnitElim lit satinstance = 
+    let flipped = Literal (literalVar lit) (not $ literalSign lit) in
+    Set.map (Set.filter (/=flipped)) $ Set.filter (notElem lit) satinstance
+-- vaguely tested lmao wtf is this language
+
+
+-- | Checks if a given Literal is pure within a SATInstance
+checkPureElim :: Literal -> SATInstance -> Bool
+checkPureElim lit = 
+    (==1) . Set.size . Set.filter ((== literalVar lit) . literalVar) . Set.unions
+
+
+-- | Does a pure elimination with a given Literal and SATInstance
+doPureElim :: Literal -> SATInstance -> SATInstance
+doPureElim lit = 
+    Set.filter (notElem lit)
+
+
 main :: IO ()
 main = do
     -- read in file name
@@ -84,9 +112,16 @@ main = do
     contents <- readFile file
     let cnf = parseCNF contents
 
-    print contents
-    print '\n'
-    print cnf
+    --print contents
+    --print '\n'
+    let fst = Set.elemAt 0 $ Set.elemAt 0 cnf
+    --print $ Set.elemAt 1 $ Set.elemAt 1 cnf
+    let out1 = doUnitElim fst cnf
+    --print fst
+    --print out1
+    --print cnf
 
     -- TODO: find a satisfying instance (or return unsat) and print it out
-    putStrLn "Print the solution here!"
+    --putStrLn "Print the solution here!"
+    putStrLn "\n"
+    --print $ Set.unions cnf
