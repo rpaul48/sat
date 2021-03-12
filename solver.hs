@@ -19,6 +19,7 @@ type Clause = Set Literal
 type SATInstance = Set Clause
 data Result = Assignment [(Variable, Bool)] | Unsat
 
+data ProgressInst = ProgressInst {assn :: Result, satinst :: SATInstance} deriving (Show)
 
 -- Functions for parsing input and printing output
 instance Show Result where
@@ -88,6 +89,10 @@ doUnitElim lit satinstance =
     let flipped = Literal (literalVar lit) (not $ literalSign lit) in
     Set.map (Set.filter (/=flipped)) $ Set.filter (notElem lit) satinstance
 -- vaguely tested lmao wtf is this language
+
+
+-- | Does all the unit clause eliminations for a given SATInstance
+
 
 
 -- | Checks if a given Literal is pure within a SATInstance
