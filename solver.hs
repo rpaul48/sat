@@ -1,3 +1,5 @@
+module Solver where
+
 import qualified Data.Set as Set
 import           Data.Set (Set)
 import qualified Data.Map as Map
@@ -79,7 +81,8 @@ formatOutput res =
 -- | Checks if a given Literal is contained as a unit clause in a SATInstance
 checkUnitElim :: Literal -> SATInstance -> Bool
 checkUnitElim lit satinstance = 
-    any (\clause -> elem lit clause && 1 == Set.size clause) $ Set.toList satinstance
+    --any (\clause -> elem lit clause && 1 == Set.size clause) $ Set.toList satinstance
+    elem (Set.singleton lit) $ Set.toList satinstance
 
 
 -- | Does a unit clause elimination with a given Literal and SATInstance
@@ -122,9 +125,9 @@ main = do
     let fst = Set.elemAt 0 $ Set.elemAt 0 cnf
     --print $ Set.elemAt 1 $ Set.elemAt 1 cnf
     let out1 = doUnitElim fst cnf
-    --print fst
-    --print out1
-    --print cnf
+    print fst
+    print out1
+    print cnf
 
     -- TODO: find a satisfying instance (or return unsat) and print it out
     --putStrLn "Print the solution here!"
