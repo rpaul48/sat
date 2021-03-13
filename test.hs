@@ -13,7 +13,12 @@ import           Control.Exception (assert)
 import           Debug.Trace
 import           Data.Typeable
 
-oneClauseOneVarSI = Set.fromList [Set.fromList [S.Literal 1 True]]
+oneUnitClause = Set.fromList [Set.fromList [S.Literal 1 True]]
+manyUnitClauses = Set.fromList [
+  Set.fromList [S.Literal {S.literalVar = 1, S.literalSign = False}], 
+  Set.fromList [S.Literal {S.literalVar = 1, S.literalSign = True}],
+  Set.fromList [S.Literal {S.literalVar = 2, S.literalSign = True}],
+  Set.fromList [S.Literal {S.literalVar = 3, S.literalSign = True}]]
 
 test :: Bool -> String -> String 
 test expr message =
@@ -21,14 +26,17 @@ test expr message =
 
 testCheckUnitElim :: IO ()
 testCheckUnitElim = do
-  let testCase = S.checkUnitElim (S.Literal 1 False) oneClauseOneVarSI
+  let testCase = S.checkUnitElim (S.Literal 1 False) oneUnitClause
   print (test (not testCase) "checkUnitElim false single element val matches")
 
-  let testCase = S.checkUnitElim (S.Literal 1 True) oneClauseOneVarSI
+  let testCase = S.checkUnitElim (S.Literal 1 True) oneUnitClause
   print (test testCase "checkUnitElim true single element")
 
-  let testCase = S.checkUnitElim (S.Literal 2 True) oneClauseOneVarSI
+  let testCase = S.checkUnitElim (S.Literal 2 True) oneUnitClause
   print (test (not testCase) "checkUnitElim false single element sign matches")
+
+  let testCase = S.checkUnitElim  (S.Literal 3 True) manyUnitClauses
+  print (test testCase "checkUnitElim true multiple unit clauses")
 
 testDoUnitElim :: IO ()
 testDoUnitElim = do
