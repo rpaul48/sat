@@ -19,17 +19,17 @@ data Literal = Literal { literalVar :: Variable
                        } deriving (Ord, Eq, Show)
 type Clause = Set Literal
 type SATInstance = Set Clause
-data Result = Assignment [(Variable, Bool)] | Unsat
+data Result = Assignment [(Variable, Bool)] | Unsat deriving (Eq)
 
-data ProgressInst = ProgressInst {assn :: Result, satinst :: SATInstance} deriving (Show)
+data SATProgress = SATProgress {assn :: Result, satinst :: SATInstance} deriving (Show)
 
 -- Functions for parsing input and printing output
 instance Show Result where
     show Unsat             = "UNSAT"
-    show (Assignment assn) = foldl
-        (\str (var, bool) ->str ++ " " ++ (if bool then "-" else "") ++ show var)
+    show (Assignment assnt) = foldl
+        (\str (var, bool) ->str ++ " " ++ (if bool then "" else "-") ++ show var)
         ""
-        assn
+        assnt
 
 -- | Takes an integer (positive or negative) and returns the corresponding literal.
 makeLiteral :: Int -> Literal
@@ -95,6 +95,17 @@ doUnitElim lit satinstance =
 
 
 -- | Does all the unit clause eliminations for a given SATInstance
+unitElim :: SATProgress -> SATProgress
+unitElim current = 
+    -- filter to get the literals which can be unit eliminated
+    let eliminable = Set.filter (flip checkUnitElim $ satinst current) (Set.unions $ satinst current) in
+    if Set.size eliminable == 0
+        -- return input if no literals can be eliminated
+        then current 
+        else 
+             unitElim $ Set.foldl (\progress next -> 
+                let updated = (doUnitElim next $ satinst progress); Assignment assigned = assn progress in SATProgress (Assignment $ (literalVar next, literalSign next):assigned) updated
+                ) current eliminable 
 
 
 
@@ -109,6 +120,42 @@ doPureElim :: Literal -> SATInstance -> SATInstance
 doPureElim lit = 
     Set.filter (notElem lit)
 
+-- | Does all the pure clause eliminations for a given SATInstance
+pureElim :: SATProgress -> SATProgress
+pureElim current = 
+    -- filter to get the literals which can be pure eliminated
+    let eliminable = Set.filter (flip checkPureElim $ satinst current) (Set.unions $ satinst current) in
+    if Set.size eliminable == 0
+        -- return input if no literals can be eliminated
+        then current 
+        else 
+             pureElim $ Set.foldl (\progress next -> 
+                let updated = (doPureElim next $ satinst progress); Assignment assigned = assn progress in SATProgress (Assignment $ (literalVar next, literalSign next):assigned) updated
+                ) current eliminable
+
+-- | Recursively determines a variable assignment that satisfies a CNF formula
+rsolve :: SATProgress -> SATProgress
+rsolve full@(SATProgress Unsat _) = full
+rsolve current = 
+    -- do unit elimination and pure elimination
+    let eliminated = pureElim $ unitElim current in 
+
+    -- check for UNSAT case
+    if elem Set.empty $ satinst eliminated
+        then SATProgress Unsat $ satinst eliminated
+        else 
+            if Set.null $ satinst eliminated
+                then eliminated
+                else let Assignment assigned = assn eliminated; choice = head $ Set.toList $ Set.unions $ satinst eliminated in
+                    rsolve (SATProgress (Assignment $ (literalVar choice, literalSign choice):assigned) $ doUnitElim choice $ satinst eliminated)
+
+solve :: SATInstance -> Result
+solve cnf =
+    -- create SATProgress
+    let final = rsolve (SATProgress (Assignment []) cnf); in
+        if assn final == Unsat then Unsat else
+            let allVars = Set.map literalVar $ Set.unions cnf; Assignment assigned = assn final; defVars = Set.fromList $ map fst assigned; diffed = Set.toList $ Set.difference allVars defVars in Assignment $ assigned ++ map (\v -> (v, True)) diffed
+
 
 main :: IO ()
 main = do
@@ -119,15 +166,15 @@ main = do
     -- read and parse file contents
     contents <- readFile file
     let cnf = parseCNF contents
-
     --print contents
     --print '\n'
     let fst = Set.elemAt 0 $ Set.elemAt 0 cnf
     --print $ Set.elemAt 1 $ Set.elemAt 1 cnf
     let out1 = doUnitElim fst cnf
-    print fst
-    print out1
-    print cnf
+    --print fst
+    --print out1
+    --print cnf
+    print $ solve cnf
 
     -- TODO: find a satisfying instance (or return unsat) and print it out
     --putStrLn "Print the solution here!"
