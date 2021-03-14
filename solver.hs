@@ -146,8 +146,10 @@ rsolve current =
         else 
             if Set.null $ satinst eliminated
                 then eliminated
-                else let Assignment assigned = assn eliminated; choice = head $ Set.toList $ Set.unions $ satinst eliminated in
-                    rsolve (SATProgress (Assignment $ (literalVar choice, literalSign choice):assigned) $ doUnitElim choice $ satinst eliminated)
+                else let Assignment assigned = assn eliminated; choice = head $ Set.toList $ Set.unions $ satinst eliminated; choiceFlipped = Literal (literalVar choice) (not $ literalSign choice) in
+                    let firstGuess = rsolve (SATProgress (Assignment $ (literalVar choice, literalSign choice):assigned) $ doUnitElim choice $ satinst eliminated) in
+                        if assn firstGuess /= Unsat then firstGuess else 
+                            rsolve (SATProgress (Assignment $ (literalVar choiceFlipped, literalSign choiceFlipped):assigned) $ doUnitElim choiceFlipped $ satinst eliminated)
 
 solve :: SATInstance -> Result
 solve cnf =
