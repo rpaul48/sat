@@ -112,7 +112,7 @@ unitElim current =
 -- | Checks if a given Literal is pure within a SATInstance
 checkPureElim :: Literal -> SATInstance -> Bool
 checkPureElim lit = 
-    (==1) . Set.size . Set.filter ((== literalVar lit) . literalVar) . Set.unions
+    (== Set.singleton lit) . Set.filter ((== literalVar lit) . literalVar) . Set.unions
 
 
 -- | Does a pure elimination with a given Literal and SATInstance
@@ -175,7 +175,7 @@ main = do
     --print fst
     --print out1
     print cnf
-    print $ solve cnf
+    --print $ solve cnf
 
     -- TODO: find a satisfying instance (or return unsat) and print it out
     --putStrLn "Print the solution here!"

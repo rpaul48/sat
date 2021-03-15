@@ -3,7 +3,8 @@ unit literal: if some literal X is alone,
 	- remove from clause set each individual literal with different sign
 --> Output
 
-pure literal: if a literal X occurs as the same sign in *every clause* (but every clause doesnt need to have the literal)
+pure literal: if a literal X occurs as the same sign in *every clause* 
+(but every clause doesnt need to have the literal)
 	- elim every row/clause containing X
 --> Output
 
