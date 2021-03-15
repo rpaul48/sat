@@ -21,7 +21,7 @@ type Clause = Set Literal
 type SATInstance = Set Clause
 data Result = Assignment [(Variable, Bool)] | Unsat deriving (Eq)
 
-data SATProgress = SATProgress {assn :: Result, satinst :: SATInstance} deriving (Show)
+data SATProgress = SATProgress {assn :: Result, satinst :: SATInstance} deriving (Eq, Show)
 
 -- Functions for parsing input and printing output
 instance Show Result where
@@ -168,17 +168,16 @@ main = do
     -- read and parse file contents
     contents <- readFile file
     let cnf = parseCNF contents
-    --print contents
-    --print '\n'
+
     let fst = Set.elemAt 0 $ Set.elemAt 0 cnf
     --print $ Set.elemAt 1 $ Set.elemAt 1 cnf
     let out1 = doUnitElim fst cnf
     --print fst
     --print out1
-    --print cnf
+    print cnf
     print $ solve cnf
 
     -- TODO: find a satisfying instance (or return unsat) and print it out
     --putStrLn "Print the solution here!"
-    putStrLn "\n"
+    putStr "\n"
     --print $ Set.unions cnf
