@@ -271,6 +271,21 @@ testSolver = do
   let testCase = verifySolve (S.solve multiplePureElims) multiplePureElims
   putStrLn $ test testCase "multiplePureElims solution"
 
+  contents <- readFile "data/auto_sat_bc_ors"
+  let autoSatOrs = S.parseCNF contents
+  let testCase = verifySolve (S.solve autoSatOrs) autoSatOrs
+  putStrLn $ test testCase "autoSatOrs valid solution"
+
+  contents <- readFile "data/blank_clause"
+  let blankClause = S.parseCNF contents
+  let testCase = S.solve blankClause == S.Unsat
+  putStrLn $ test testCase "blankClause valid solution"
+
+  contents <- readFile "data/QUINN_DIMACS"
+  let quinnCNF = S.parseCNF contents
+  let testCase = verifySolve (S.solve quinnCNF) quinnCNF
+  putStrLn $ test testCase "quinnCNF valid solution"
+
   contents <- readFile "data/LARGE_DIMACS_1"
   let largeCNF = S.parseCNF contents
   let testCase = verifySolve (S.solve largeCNF) largeCNF
