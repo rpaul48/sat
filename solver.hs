@@ -70,13 +70,11 @@ parseCNF input =
             . assert (all (\clause -> last clause == "0") . tail $ contentLines)
             $ cnf
 
-
 -- | Prints the answer in the DIMACS standard output method.
 formatOutput :: Result -> String
 formatOutput Unsat = "s UNSATISFIABLE"
 formatOutput res =
-    "s SATISFIABLE\n" ++ "v" ++ (show res) ++ " 0"
-
+    "s SATISFIABLE\n" ++ "v" ++ show res ++ " 0"
 
 -- | Checks if a given Literal is contained as a unit clause in a SATInstance
 checkUnitElim :: Literal -> SATInstance -> Bool
@@ -84,15 +82,12 @@ checkUnitElim lit satinstance =
     --any (\clause -> elem lit clause && 1 == Set.size clause) $ Set.toList satinstance
     elem (Set.singleton lit) $ Set.toList satinstance
 
-
 -- | Does a unit clause elimination with a given Literal and SATInstance
 doUnitElim :: Literal -> SATInstance -> SATInstance
 --doUnitElim _ empty = empty      -- shouldn't be necessary
 doUnitElim lit satinstance = 
     let flipped = Literal (literalVar lit) (not $ literalSign lit) in
     Set.map (Set.filter (/=flipped)) $ Set.filter (notElem lit) satinstance
--- vaguely tested lmao wtf is this language
-
 
 -- | Does all the unit clause eliminations for a given SATInstance
 unitElim :: SATProgress -> SATProgress
@@ -107,13 +102,10 @@ unitElim current =
                 let updated = (doUnitElim next $ satinst progress); Assignment assigned = assn progress in SATProgress (Assignment $ (literalVar next, literalSign next):assigned) updated
                 ) current eliminable 
 
-
-
 -- | Checks if a given Literal is pure within a SATInstance
 checkPureElim :: Literal -> SATInstance -> Bool
 checkPureElim lit = 
     (== Set.singleton lit) . Set.filter ((== literalVar lit) . literalVar) . Set.unions
-
 
 -- | Does a pure elimination with a given Literal and SATInstance
 doPureElim :: Literal -> SATInstance -> SATInstance
@@ -158,7 +150,6 @@ solve cnf =
         if assn final == Unsat then Unsat else
             let allVars = Set.map literalVar $ Set.unions cnf; Assignment assigned = assn final; defVars = Set.fromList $ map fst assigned; diffed = Set.toList $ Set.difference allVars defVars in Assignment $ assigned ++ map (\v -> (v, True)) diffed
 
-
 main :: IO ()
 main = do
     -- read in file name
@@ -167,17 +158,5 @@ main = do
 
     -- read and parse file contents
     contents <- readFile file
-    let cnf = parseCNF contents
-
-    let fst = Set.elemAt 0 $ Set.elemAt 0 cnf
-    --print $ Set.elemAt 1 $ Set.elemAt 1 cnf
-    let out1 = doUnitElim fst cnf
-    --print fst
-    --print out1
-    print cnf
-    --print $ solve cnf
-
-    -- TODO: find a satisfying instance (or return unsat) and print it out
-    --putStrLn "Print the solution here!"
-    putStr "\n"
-    --print $ Set.unions cnf
+    let cnf = parseCNF contents in
+        putStrLn $ formatOutput $ solve cnf

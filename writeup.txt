@@ -1,0 +1,10 @@
+We tested our solver against Forge's solver using the ring problem from the
+Forge2 homework assignment. When running to find world which satisfied isRing for
+exactly 4 nodes, Forge found an instance in 5 milliseconds whereas our solver 
+took 7293 milliseconds. When attempting an UNSAT case where we modified the
+isRing predicate to be impossible, Forge determined UNSAT in 0 milliseconds while
+our solver took noticeably longer, printing #f for each of the stats. We believe
+some of this difference is do to our solver having potentially excessive iterations
+and not compiling using optimizations.
+
+Our tests can be found in test.hs, and the file may be run from root with `runhaskell test.hs`.

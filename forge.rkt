@@ -1,6 +1,6 @@
 #lang forge
 
-option solver "/Users/rajpaul/cs1710/projects/sat/run.sh"
+--option solver "/Users/rajpaul/cs1710/projects/sat/run.sh"
 
 sig Node {
     next: one Node
@@ -29,4 +29,4 @@ pred isRing {
     connected)
 }
 
-run isRing for 3 Node
+run isRing for exactly 4 Node
