@@ -1,3 +1,3 @@
 #!/bin/bash
 
-runhaskell solver.hs $1
+runghc solver.hs $1
