@@ -3,7 +3,8 @@ module Solver where
 import qualified Data.Set as Set
 import           Data.Set (Set)
 import qualified Data.Map as Map
-import           Data.List (intercalate)
+--import  Data.List (intercalate)
+import qualified Data.List as List
 import           Data.Time
 import           Text.Printf
 import           System.Environment
@@ -26,8 +27,8 @@ data SATProgress = SATProgress {assn :: Result, satinst :: SATInstance} deriving
 -- Functions for parsing input and printing output
 instance Show Result where
     show Unsat             = "UNSAT"
-    show (Assignment assnt) = foldl
-        (\str (var, bool) ->str ++ " " ++ (if bool then "" else "-") ++ show var)
+    show (Assignment assnt) = List.foldl
+        (\str (var, bool) ->str List.++ " " List.++ (if bool then "" else "-") List.++ show var)
         ""
         assnt
 
@@ -51,23 +52,23 @@ makeLiteralFromStr litStr = makeLiteral (read litStr)
 -- | Takes a list of strings representing literals and returns the clause containing
 -- those literals.
 makeClause :: [String] -> Clause
-makeClause = Set.fromList . map makeLiteralFromStr . init
+makeClause = Set.fromList . List.map makeLiteralFromStr . List.init
 
 -- | Takes the contents of an input file and returns the encoded SAT problem.
 parseCNF :: String -> SATInstance
 parseCNF input =
     let allLines     = lines input
         -- tokenize and remove comment lines
-        tokLines     = map words (filter (/= "") allLines)
-        contentLines = filter (\tokLine -> head tokLine /= "c") tokLines
+        tokLines     = List.map words (filter (/= "") allLines)
+        contentLines = List.filter (\tokLine -> List.head tokLine /= "c") tokLines
         -- make sure first line is problem line
-        pLine        = if head (head contentLines) /= "p"
+        pLine        = if List.head (List.head contentLines) /= "p"
             then error "Error: DIMACS file does not have problem line"
-            else head contentLines
+            else List.head contentLines
         -- Create a set of clauses from the content lines
-        cnf = Set.fromList . map makeClause . tail $ contentLines
+        cnf = Set.fromList . List.map makeClause . List.tail $ contentLines
     in  assert (pLine !! 1 == "cnf")
-            . assert (all (\clause -> last clause == "0") . tail $ contentLines)
+            . assert (all (\clause -> List.last clause == "0") . List.tail $ contentLines)
             $ cnf
 
 -- | Prints the answer in the DIMACS standard output method.
@@ -138,7 +139,7 @@ rsolve current =
         else 
             if Set.null $ satinst eliminated
                 then eliminated
-                else let Assignment assigned = assn eliminated; choice = head $ Set.toList $ Set.unions $ satinst eliminated; choiceFlipped = Literal (literalVar choice) (not $ literalSign choice) in
+                else let Assignment assigned = assn eliminated; choice = List.head $ Set.toList $ Set.unions $ satinst eliminated; choiceFlipped = Literal (literalVar choice) (not $ literalSign choice) in
                     let firstGuess = rsolve (SATProgress (Assignment $ (literalVar choice, literalSign choice):assigned) $ doUnitElim choice $ satinst eliminated) in
                         if assn firstGuess /= Unsat then firstGuess else 
                             rsolve (SATProgress (Assignment $ (literalVar choiceFlipped, literalSign choiceFlipped):assigned) $ doUnitElim choiceFlipped $ satinst eliminated)
@@ -148,13 +149,13 @@ solve cnf =
     -- create SATProgress
     let final = rsolve (SATProgress (Assignment []) cnf); in
         if assn final == Unsat then Unsat else
-            let allVars = Set.map literalVar $ Set.unions cnf; Assignment assigned = assn final; defVars = Set.fromList $ map fst assigned; diffed = Set.toList $ Set.difference allVars defVars in Assignment $ assigned ++ map (\v -> (v, True)) diffed
+            let allVars = Set.map literalVar $ Set.unions cnf; Assignment assigned = assn final; defVars = Set.fromList $ List.map fst assigned; diffed = Set.toList $ Set.difference allVars defVars in Assignment $ assigned List.++ List.map (\v -> (v, True)) diffed
 
 main :: IO ()
 main = do
     -- read in file name
     args <- getArgs
-    let file = head args
+    let file = List.head args
 
     -- read and parse file contents
     contents <- readFile file
