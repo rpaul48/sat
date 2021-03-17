@@ -1,17 +1,13 @@
 module Test where
 
-import qualified Solver as S hiding (main) 
+import           Solver as S hiding (main) 
 
-import qualified Data.Set as Set
+import           Data.Set as Set
 import           Data.Set (Set)
-import qualified Data.Map as Map
-import           Data.List (intercalate)
-import           Data.Time
+import           Data.List as List
+
 import           Text.Printf
-import           System.Environment
 import           Control.Exception (assert)
-import           Debug.Trace
-import           Data.Typeable
 
 -- | CNF sat instances for testing
 oneUnitClause = Set.fromList [Set.fromList [S.Literal 1 True]]
@@ -239,7 +235,7 @@ verifySolve result cnf =
   Set.foldl (\acc clause -> acc &&
     Set.foldl (\acc lit -> 
       -- for each literal in the formula, there's one literal with that var value in result
-      1 == length (filter (\res -> S.literalVar lit == (let (v,_) = res in v)) assignments) 
+      1 == List.length (List.filter (\res -> S.literalVar lit == (let (v,_) = res in v)) assignments) 
       &&
       -- each clause has at least one literal contained in the result
       (acc || elem (S.literalVar lit, S.literalSign lit) assignments))

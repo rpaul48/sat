@@ -1,6 +1,6 @@
 #lang forge
 
---option solver "/Users/rajpaul/cs1710/projects/sat/run.sh"
+option solver "/Users/rajpaul/cs1710/projects/sat/run.sh"
 
 sig Node {
     next: one Node

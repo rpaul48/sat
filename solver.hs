@@ -2,15 +2,10 @@ module Solver where
 
 import           Data.Set as Set
 import           Data.Set (Set)
---import qualified Data.Map as Map
---import  Data.List (intercalate)
+
 import           Data.List as List
---import           Data.Time
---import           Text.Printf
 import           System.Environment
 import           Control.Exception (assert)
---import           Debug.Trace
---import           Data.Typeable
 
 
 -- Data definitions
@@ -80,12 +75,10 @@ formatOutput res =
 -- | Checks if a given Literal is contained as a unit clause in a SATInstance
 checkUnitElim :: Literal -> SATInstance -> Bool
 checkUnitElim lit satinstance = 
-    --any (\clause -> elem lit clause && 1 == Set.size clause) $ Set.toList satinstance
     elem (Set.singleton lit) $ Set.toList satinstance
 
 -- | Does a unit clause elimination with a given Literal and SATInstance
 doUnitElim :: Literal -> SATInstance -> SATInstance
---doUnitElim _ empty = empty      -- shouldn't be necessary
 doUnitElim lit satinstance = 
     let flipped = Literal (literalVar lit) (not $ literalSign lit) in
     Set.map (Set.filter (/=flipped)) $ Set.filter (notElem lit) satinstance
