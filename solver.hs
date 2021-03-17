@@ -1,16 +1,16 @@
 module Solver where
 
-import qualified Data.Set as Set
+import           Data.Set as Set
 import           Data.Set (Set)
-import qualified Data.Map as Map
+--import qualified Data.Map as Map
 --import  Data.List (intercalate)
-import qualified Data.List as List
-import           Data.Time
-import           Text.Printf
+import           Data.List as List
+--import           Data.Time
+--import           Text.Printf
 import           System.Environment
 import           Control.Exception (assert)
-import           Debug.Trace
-import           Data.Typeable
+--import           Debug.Trace
+--import           Data.Typeable
 
 
 -- Data definitions
@@ -59,7 +59,7 @@ parseCNF :: String -> SATInstance
 parseCNF input =
     let allLines     = lines input
         -- tokenize and remove comment lines
-        tokLines     = List.map words (filter (/= "") allLines)
+        tokLines     = List.map words (List.filter (/= "") allLines)
         contentLines = List.filter (\tokLine -> List.head tokLine /= "c") tokLines
         -- make sure first line is problem line
         pLine        = if List.head (List.head contentLines) /= "p"
