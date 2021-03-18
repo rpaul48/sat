@@ -4,6 +4,7 @@ import           Data.Set as Set
 import           Data.Set (Set)
 
 import           Data.List as List
+import           Data.Function as Function
 import           System.Environment
 import           Control.Exception (assert)
 
@@ -72,6 +73,10 @@ formatOutput Unsat = "s UNSATISFIABLE"
 formatOutput res =
     "s SATISFIABLE\n" ++ "v" ++ show res ++ " 0"
 
+-- | Spits out the most common element in a list
+mostCommon :: Ord a => [a] -> a
+mostCommon = head . maximumBy (compare `on` length) . group . sort
+
 -- | Checks if a given Literal is contained as a unit clause in a SATInstance
 checkUnitElim :: Literal -> SATInstance -> Bool
 checkUnitElim lit satinstance = 
@@ -132,7 +137,7 @@ rsolve current =
         else 
             if Set.null $ satinst eliminated
                 then eliminated
-                else let Assignment assigned = assn eliminated; choice = List.head $ Set.toList $ Set.unions $ satinst eliminated; choiceFlipped = Literal (literalVar choice) (not $ literalSign choice) in
+                else let Assignment assigned = assn eliminated; choice = mostCommon $ concat $ Set.toList $ Set.map Set.toList $ satinst eliminated; choiceFlipped = Literal (literalVar choice) (not $ literalSign choice) in
                     let firstGuess = rsolve (SATProgress (Assignment $ (literalVar choice, literalSign choice):assigned) $ doUnitElim choice $ satinst eliminated) in
                         if assn firstGuess /= Unsat then firstGuess else 
                             rsolve (SATProgress (Assignment $ (literalVar choiceFlipped, literalSign choiceFlipped):assigned) $ doUnitElim choiceFlipped $ satinst eliminated)
